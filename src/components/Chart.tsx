@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { type EChartsOption } from 'echarts';
 
-export default function ChartComponent({ options }: { options: EChartsOption }) {
+export default function ChartComponent({ options, className }: { options: EChartsOption; className?: string }) {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,5 +25,5 @@ export default function ChartComponent({ options }: { options: EChartsOption }) 
     };
   }, [options]);
 
-  return <div ref={chartRef} className="w-full h-[600px]" />;
+  return <div ref={chartRef} className={className} />;
 }

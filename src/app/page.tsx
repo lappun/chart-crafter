@@ -1,8 +1,9 @@
 import Link from "next/link";
 import ChartComponent from "@/components/Chart";
+import { EChartsOption } from "echarts";
 
 export default function Home() {
-  const sampleChartOptions = {
+  const sampleChartOptions: EChartsOption = {
     xAxis: { type: "category", data: ["Q1", "Q2", "Q3", "Q4"] },
     yAxis: { type: "value" },
     series: [{ data: [120, 200, 150, 80], type: "line" }],
@@ -41,7 +42,7 @@ export default function Home() {
             <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
               <div className="h-64">
-                <ChartComponent options={sampleChartOptions} />
+                <ChartComponent options={sampleChartOptions} className="w-full h-64" />
               </div>
             </div>
           </div>

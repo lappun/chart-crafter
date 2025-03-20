@@ -119,7 +119,7 @@ export default async function ChartPage({
         id="chart-container"
         className="flex-1 flex items-center justify-center"
       >
-        <ChartComponent options={config.data} />
+        <ChartComponent options={config.data} className="w-full h-[600px]" />
       </div>
     </div>
   );
