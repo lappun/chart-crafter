@@ -8,3 +8,10 @@ interface CloudflareEnv {
 }
 
 type ChartRequestData = any;
+
+type ChartGenerationResult = {
+  id?: string;
+  url?: string;
+  password?: string;
+  svg?: string;
+};

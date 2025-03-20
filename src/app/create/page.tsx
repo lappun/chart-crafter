@@ -14,7 +14,7 @@ export default function CreateChartPage() {
       series: [{ data: [150, 230, 224, 218, 135, 147, 260], type: 'line' }]
     }, null, 2)
   });
-  const [result, setResult] = useState<{ id?: string; password?: string; url?: string }>({});
+  const [result, setResult] = useState<ChartGenerationResult>({});
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +35,7 @@ export default function CreateChartPage() {
         throw new Error(await response.text());
       }
 
-      const result = await response.json();
+      const result = await response.json() as ChartGenerationResult;
       setResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create chart');
@@ -136,7 +136,7 @@ export default function CreateChartPage() {
           </button>
 
           <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            Note: You'll receive a deletion password after creation. Keep it safe!
+            Note: You&apos;ll receive a deletion password after creation. Keep it safe!
           </div>
         </form>
       )}
