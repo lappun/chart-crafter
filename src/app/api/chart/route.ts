@@ -10,7 +10,7 @@ interface ChartRequest {
   expiresIn?: string;
 }
 
-interface StoredChartData extends ChartRequest {
+export interface StoredChartData extends ChartRequest {
   expiryTime: number;
   password: string;
 }
@@ -104,4 +104,47 @@ async function generateChartBase64String(options: ChartRequestData): Promise<str
   
   chart.setOption(options);
   return chart.renderToSVGString();
+}
+
+export async function GET(request: Request) {
+  const { env } = getRequestContext();
+
+  // Master key auth validation
+  const authHeader = request.headers.get('Authorization');
+  const providedKey = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  
+  if (!env.MASTER_KEY || providedKey !== env.MASTER_KEY) {
+    return new Response('Invalid or missing authorization token', { 
+      status: 401,
+      headers: { 'WWW-Authenticate': 'Bearer' }
+    });
+  }
+
+  try {
+    // List all charts
+    const { objects } = await env.CHART_BUCKET.list();
+    const chartList = await Promise.all(objects.map(async (object) => {
+      if (!object.key.endsWith('.json')) return null;
+      
+      const data = await env.CHART_BUCKET.get(object.key);
+      if (!data) return null;
+      
+      const chart = await data.json<StoredChartData>();
+      return {
+        id: object.key.replace('.json', ''),
+        name: chart.name,
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/echart/${object.key.replace('.json', '')}`,
+        createdAt: object.uploaded,
+        expiresAt: chart.expiryTime,
+        status: Date.now() > chart.expiryTime ? 'expired' : 'active'
+      };
+    }));
+
+    return NextResponse.json({
+      charts: chartList.filter(chart => chart !== null)
+    });
+  } catch (error) {
+    console.error('List charts failed:', error);
+    return new Response('Failed to retrieve chart list', { status: 500 });
+  }
 }
