@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 import { Resvg, initWasm, ResvgRenderOptions } from "@resvg/resvg-wasm";
+// @ts-ignore
+import _wasm from "../../wasm/index_bg.wasm?module";
 
 export const runtime = "edge";
 interface ChartRequest {
@@ -93,11 +95,7 @@ async function generateChartImage(
   options: ChartRequestData
 ): Promise<{ svg: string; png: string }> {
   try {
-    const wasmResponse = await fetch(
-      "https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm"
-    );
-    const wasmArrayBuffer = await wasmResponse.arrayBuffer();
-    await initWasm(wasmArrayBuffer);
+    await initWasm(_wasm);
   } catch (error) {
     console.debug('ignroe this error', error);
   }
