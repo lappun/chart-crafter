@@ -35,7 +35,7 @@ async function testCreateChart() {
   const { url, svg, password } = await response.json();
   console.log('\x1b[32m%s\x1b[0m', '✓ Chart created successfully');
   console.log('password', password);
-  console.log('svg', svg);
+  // console.log('svg', svg);
   return url.split('/').filter(Boolean).pop(); // Return the chart ID
 }
 
