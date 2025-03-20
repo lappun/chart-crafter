@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { ResvgRenderOptions } from "@resvg/resvg-wasm";
+import { Resvg, initWasm, ResvgRenderOptions } from "@resvg/resvg-wasm";
 
 export const runtime = "edge";
-
 interface ChartRequest {
   name: string;
   description: string;
@@ -93,13 +92,12 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 async function generateChartImage(
   options: ChartRequestData
 ): Promise<{ svg: string; png: string }> {
-  const ResvgWasm = await import("@resvg/resvg-wasm");
-  const wasmResponse = await fetch(
-    "https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm"
-  );
-  const wasmArrayBuffer = await wasmResponse.arrayBuffer();
   try {
-    await ResvgWasm.initWasm(wasmArrayBuffer);
+    const wasmResponse = await fetch(
+      "https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm"
+    );
+    const wasmArrayBuffer = await wasmResponse.arrayBuffer();
+    await initWasm(wasmArrayBuffer);
   } catch (error) {
     console.debug('ignroe this error', error);
   }
@@ -116,7 +114,7 @@ async function generateChartImage(
   const svg = chart.renderToSVGString();
 
   const opts: ResvgRenderOptions = {};
-  const resvg = new ResvgWasm.Resvg(svg, opts as ResvgRenderOptions);
+  const resvg = new Resvg(svg, opts as ResvgRenderOptions);
   const pngData = resvg.render().asPng();
 
   const pngBuffer = pngData.buffer.slice(0) as ArrayBuffer;
