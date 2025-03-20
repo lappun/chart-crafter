@@ -7,7 +7,7 @@ interface ChartRequest {
   name: string;
   description: string;
   data: ChartRequestData;
-  expiresIn: string;
+  expiresIn?: string;
 }
 
 interface StoredChartData extends ChartRequest {
@@ -28,12 +28,13 @@ export async function POST(request: Request) {
   const { env } = getRequestContext();
   const data: ChartRequest = await request.json();
   
-  if (!data.name || !data.description || !data.data || !data.expiresIn) {
+  if (!data.name || !data.description || !data.data) {
     return new Response('Missing required fields', { status: 400 });
   }
 
-  // Parse expiry duration
-  const expiryMatch = data.expiresIn.match(/^(\d+)([dh])$/);
+  // Set default expiry if none provided and parse expiry duration
+  const expiresIn = data.expiresIn || '1d';
+  const expiryMatch = expiresIn.match(/^(\d+)([dh])$/);
   if (!expiryMatch) {
     return new Response('Invalid expiry format. Use e.g. "1h" or "30d"', { status: 400 });
   }

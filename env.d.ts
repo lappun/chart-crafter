@@ -3,6 +3,7 @@
 
 interface CloudflareEnv {
   CHART_BUCKET: R2Bucket;
+  MASTER_KEY?: string;
 }
 
 type ChartRequestData = any;
