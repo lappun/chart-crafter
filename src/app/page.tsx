@@ -1,6 +1,23 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import ChartComponent from "@/components/Chart";
 import { EChartsOption } from "echarts";
+import { getRequestContext } from "@cloudflare/next-on-pages";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<any>;
+}): Promise<Metadata> {
+  const { env } = getRequestContext();
+  return {
+    title: "Chart Crafter - Create & Share Temporary Charts",
+    description: "Generate secure, auto-expiring chart URLs with password protection and social media integration.",
+    openGraph: {
+      images: `${env.NEXT_PUBLIC_BASE_URL}/sample_charts.jpg`,
+    },
+  }
+};
 
 export default function Home() {
   const sampleChartOptions: EChartsOption = {
