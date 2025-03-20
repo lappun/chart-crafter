@@ -40,9 +40,9 @@ async function testCreateChart() {
 }
 
 async function testChartPage(id) {
-  console.log('\x1b[36m%s\x1b[0m', `Testing GET /echart/${id}...`);
+  console.log('\x1b[36m%s\x1b[0m', `Testing GET /chart/${id}...`);
   
-  const response = await fetch(`${BASE_URL}/echart/${id}/`);
+  const response = await fetch(`${BASE_URL}/chart/${id}/`);
   const html = await response.text();
 
   if (!response.ok) {
@@ -59,7 +59,7 @@ async function testChartPage(id) {
 async function testChartImage(id) {
   console.log('\x1b[36m%s\x1b[0m', `Testing GET /api/chart/image/${id}...`);
   
-  const response = await fetch(`${BASE_URL}/echart/${id}`);
+  const response = await fetch(`${BASE_URL}/api/chart/image/${id}`);
   
   if (!response.ok) {
     throw new Error(`Image fetch failed: ${response.status}`);

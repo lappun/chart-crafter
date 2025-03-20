@@ -64,12 +64,11 @@ export async function POST(request: Request) {
   await env.CHART_BUCKET.put(`${id}.json`, JSON.stringify(storedData));
   const image = await generateChartImage(data.data);
   const imageString = arrayBufferToBase64(image);
-  await env.CHART_BUCKET.put(`${id}.png`, imageString, { httpMetadata: { contentType: 'image/png' } });
+  await env.CHART_BUCKET.put(`${id}.png`, imageString);
 
   return NextResponse.json({
     id: id,
-    url: `${process.env.NEXT_PUBLIC_BASE_URL}/echart/${id}/`,
-    imageString: imageString,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL}/chart/${id}/`,
     password: password,
   });
 }
@@ -136,7 +135,7 @@ export async function GET(request: Request) {
       return {
         id: object.key.replace('.json', ''),
         name: chart.name,
-        url: `${env.NEXT_PUBLIC_BASE_URL}/echart/${object.key.replace('.json', '')}`,
+        url: `${env.NEXT_PUBLIC_BASE_URL}/chart/${object.key.replace('.json', '')}`,
         createdAt: object.uploaded,
         expiresAt: chart.expiryTime,
         status: Date.now() > chart.expiryTime ? 'expired' : 'active'

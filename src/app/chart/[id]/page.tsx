@@ -20,15 +20,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const { id } = params;
 
   const chartData = await env.CHART_BUCKET.get(`${id}.json`);
-  const pngData = await env.CHART_BUCKET.get(`${id}.png`);
-  if (!chartData || !pngData) return {};
+  if (!chartData) return {};
 
   const config = await chartData.json() as StoredChartData;
-  const pngString = await pngData.text() as string;
   
   try {
-    const base64Image = btoa(pngString);
-
     return {
       title: config.name,
       description: config.description,
@@ -36,7 +32,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         title: config.name,
         description: config.description,
         images: [{
-          url: `data:image/png;base64,${pngData}`,
+          url: `${env.NEXT_PUBLIC_BASE_URL}/api/chart/image/${id}`,
           width: 1200,
           height: 630,
           alt: config.name,
@@ -46,7 +42,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         card: 'summary_large_image',
         title: config.name,
         description: config.description,
-        images: [`data:image/png;base64,${base64Image}`],
+        images: [`${env.NEXT_PUBLIC_BASE_URL}/api/chart/image/${id}`],
       },
     };
   } catch (error) {
