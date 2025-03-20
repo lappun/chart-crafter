@@ -62,35 +62,12 @@ export async function POST(request: Request) {
   const id = `${datePrefix}-${crypto.randomUUID()}`;
   
   await env.CHART_BUCKET.put(`${id}.json`, JSON.stringify(storedData));
-  const image = await generateChartImage(data.data);
+  const image = await generateChartBase64String(data.data);
   await env.CHART_BUCKET.put(`${id}.png`, image);
 
   return NextResponse.json({
     url: `${process.env.NEXT_PUBLIC_BASE_URL}/echart/${id}/`
   });
-}
-
-async function generateChartImage(options: ChartRequestData): Promise<ArrayBuffer> {
-  const ResvgWasm = await import('@resvg/resvg-wasm');
-  const wasmResponse = await fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm");
-  const wasmArrayBuffer = await wasmResponse.arrayBuffer();
-  await ResvgWasm.initWasm(wasmArrayBuffer);
-
-  const echarts = await import('echarts');
-  const chart = echarts.init(null, null, {
-    renderer: 'svg', 
-    ssr: true, 
-    width: 1200, 
-    height: 630
-  });
-  
-  chart.setOption(options);
-  const svg = chart.renderToSVGString();
-  
-  const resvg = new ResvgWasm.Resvg(svg);
-  const pngData = resvg.render().asPng();
-  
-  return pngData.buffer.slice(0) as ArrayBuffer;
 }
 
 async function generateChartBase64String(options: ChartRequestData): Promise<string> {
