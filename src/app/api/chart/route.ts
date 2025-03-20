@@ -17,16 +17,6 @@ export interface StoredChartData extends ChartRequest {
   password: string;
 }
 
-function generateRandomPassword(length = 12): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const buffer = new Uint8Array(length);
-  crypto.getRandomValues(buffer);
-  return Array.from(buffer)
-    .map((byte) => chars[byte % chars.length])
-    .join("");
-}
-
 export async function POST(request: Request) {
   const { env } = getRequestContext();
   const data: ChartRequest = await request.json();
@@ -57,6 +47,15 @@ export async function POST(request: Request) {
 
   // Generate password and expiry timestamp
   const expiryTime = Date.now() + expiryMs;
+  function generateRandomPassword(length = 12): string {
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const buffer = new Uint8Array(length);
+    crypto.getRandomValues(buffer);
+    return Array.from(buffer)
+      .map((byte) => chars[byte % chars.length])
+      .join("");
+  }
   const password = generateRandomPassword();
 
   // Create stored data object
