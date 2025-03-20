@@ -1,21 +1,132 @@
 const fetch = require('node-fetch');                                                                                   
-const { randomBytes } = require('crypto'); 
+const { randomBytes } = require('crypto');
+const echarts = require('echarts');
 
 const PORT = process.env.PORT || '3000';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const testChartConfig = {
   name: `Test Chart ${randomBytes(2).toString('hex')}`,
-  description: 'Test chart description',
+  description: 'Comprehensive test chart with multiple features',
   data: {
-    title: { text: 'Sample Chart' },
-    xAxis: { data: ['A', 'B', 'C', 'D', 'E'] },
-    yAxis: {},
-    series: [{
-      name: 'Values',
-      type: 'bar',
-      data: [5, 20, 36, 10, 15]
-    }]
+    title: {
+      text: 'Advanced Sales Report',
+      subtext: '2024 Q1 Performance',
+      left: 'center'
+    },
+    legend: {
+      data: ['Sales', 'Target', 'Growth Rate'],
+      top: 50
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross'
+      }
+    },
+    toolbox: {
+      feature: {
+        dataZoom: {
+          yAxisIndex: 'none'
+        },
+        restore: {},
+        saveAsImage: {}
+      }
+    },
+    xAxis: [
+      {
+        type: 'category',
+        data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        axisPointer: {
+          type: 'shadow'
+        }
+      }
+    ],
+    yAxis: [
+      {
+        type: 'value',
+        name: 'Sales/Target',
+        min: 0,
+        max: 250,
+        axisLabel: {
+          formatter: '${value}K'
+        }
+      },
+      {
+        type: 'value',
+        name: 'Growth Rate',
+        min: 0,
+        max: 25,
+        axisLabel: {
+          formatter: '{value}%'
+        }
+      }
+    ],
+    series: [
+      {
+        name: 'Sales',
+        type: 'bar',
+        data: [120, 132, 101, 134, 190, 210],
+        itemStyle: {
+          color: '#5470C6'
+        },
+        markPoint: {
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        }
+      },
+      {
+        name: 'Target',
+        type: 'bar',
+        data: [100, 120, 90, 120, 150, 180],
+        itemStyle: {
+          color: '#91CC75'
+        }
+      },
+      {
+        name: 'Growth Rate',
+        type: 'line',
+        yAxisIndex: 1,
+        data: [20, 18, 12, 14, 27, 23],
+        smooth: true,
+        itemStyle: {
+          color: '#EE6666'
+        },
+        lineStyle: {
+          width: 3
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(238,102,102,0.5)' },
+            { offset: 1, color: 'rgba(238,102,102,0.1)' }
+          ])
+        }
+      }
+    ],
+    dataZoom: [
+      {
+        type: 'slider',
+        show: true,
+        start: 0,
+        end: 100
+      }
+    ],
+    visualMap: {
+      top: 80,
+      right: 10,
+      pieces: [
+        { gt: 0, lte: 100, color: '#93CE07' },
+        { gt: 100, lte: 150, color: '#FBD437' },
+        { gt: 150, color: '#FD666D' }
+      ],
+      outOfRange: {
+        color: '#999'
+      }
+    },
+    animation: true,
+    animationDuration: 1000
   }
 };
 
