@@ -32,10 +32,10 @@ async function testCreateChart() {
     throw new Error(`POST failed: ${response.status} ${await response.text()}`);
   }
 
-  const { url, imageString, password } = await response.json();
+  const { url, svg, password } = await response.json();
   console.log('\x1b[32m%s\x1b[0m', '✓ Chart created successfully');
   console.log('password', password);
-  console.log('imageString', imageString);
+  console.log('svg', svg);
   return url.split('/').filter(Boolean).pop(); // Return the chart ID
 }
 

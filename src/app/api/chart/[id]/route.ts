@@ -9,7 +9,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const { env } = getRequestContext();
-  const { id } = params;
+  const { id } = await params;
 
   // Master key check
   const authHeader = request.headers.get('Authorization');

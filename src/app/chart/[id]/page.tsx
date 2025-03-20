@@ -71,7 +71,7 @@ export default async function ChartPage({
   // Parse chart configuration
   const config = await chartData.json() as StoredChartData;
   
-  const masterKey = searchParams?.masterKey;
+  const masterKey = (await searchParams)?.masterKey;
   const validMasterKey = env.MASTER_KEY && 
                         typeof masterKey === 'string' &&
                         masterKey === env.MASTER_KEY;

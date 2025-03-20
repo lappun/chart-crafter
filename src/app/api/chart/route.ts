@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
+import { ResvgRenderOptions } from '@resvg/resvg-wasm';
 
 export const runtime = 'edge';
 
@@ -62,14 +63,14 @@ export async function POST(request: Request) {
   const id = `${datePrefix}-${crypto.randomUUID()}`;
   
   await env.CHART_BUCKET.put(`${id}.json`, JSON.stringify(storedData));
-  const image = await generateChartImage(data.data);
-  const imageString = arrayBufferToBase64(image);
-  await env.CHART_BUCKET.put(`${id}.png`, imageString);
+  const {svg, png} = await generateChartImage(data.data);
+  await env.CHART_BUCKET.put(`${id}.png`, png);
 
   return NextResponse.json({
     id: id,
     url: `${process.env.NEXT_PUBLIC_BASE_URL}/chart/${id}/`,
     password: password,
+    svg: svg,
   });
 }
 
@@ -83,7 +84,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-async function generateChartImage(options: ChartRequestData): Promise<ArrayBuffer> {
+async function generateChartImage(options: ChartRequestData): Promise<{svg: string; png: string}> {
   const ResvgWasm = await import('@resvg/resvg-wasm');
   const wasmResponse = await fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm");
   const wasmArrayBuffer = await wasmResponse.arrayBuffer();
@@ -102,10 +103,15 @@ async function generateChartImage(options: ChartRequestData): Promise<ArrayBuffe
   chart.setOption(options);
   const svg = chart.renderToSVGString();
   
-  const resvg = new ResvgWasm.Resvg(svg);
+  const opts = {
+    logLevel: 'debug',
+  }
+  const resvg = new ResvgWasm.Resvg(svg, opts as ResvgRenderOptions);
   const pngData = resvg.render().asPng();
   
-  return pngData.buffer.slice(0) as ArrayBuffer;
+  const pngBuffer = pngData.buffer.slice(0) as ArrayBuffer;
+  const png = arrayBufferToBase64(pngBuffer);
+  return { svg, png }
 }
 
 export async function GET(request: Request) {

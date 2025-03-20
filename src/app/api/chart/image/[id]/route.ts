@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const { env } = getRequestContext();
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Get PNG data from R2 storage
