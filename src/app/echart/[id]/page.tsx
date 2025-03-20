@@ -1,4 +1,6 @@
+import type { Metadata } from 'next';
 import { getRequestContext } from '@cloudflare/next-on-pages';
+import { generateChartBase64String } from '@/app/api/chart/route';
 
 interface StoredChartData {
   name: string;
@@ -12,6 +14,48 @@ import { notFound } from 'next/navigation';
 import ChartComponent from '@/components/Chart';
 
 export const runtime = 'edge';
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const { env } = getRequestContext();
+  const { id } = params;
+
+  const chartData = await env.CHART_BUCKET.get(`${id}.json`);
+  if (!chartData) return {};
+
+  const config = await chartData.json() as StoredChartData;
+  
+  try {
+    const svgString = await generateChartBase64String(config.data);
+    const base64Image = btoa(svgString);
+
+    return {
+      title: config.name,
+      description: config.description,
+      openGraph: {
+        title: config.name,
+        description: config.description,
+        images: [{
+          url: `data:image/svg+xml;base64,${base64Image}`,
+          width: 1200,
+          height: 630,
+          alt: config.name,
+        }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: config.name,
+        description: config.description,
+        images: [`data:image/svg+xml;base64,${base64Image}`],
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata image:', error);
+    return {
+      title: config.name,
+      description: config.description,
+    };
+  }
+}
 
 export default async function ChartPage({
   params,
