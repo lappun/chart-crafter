@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     id: id,
-    url: `${process.env.NEXT_PUBLIC_BASE_URL}/chart/${id}/`,
+    url: `${env.NEXT_PUBLIC_BASE_URL}/chart/${id}/`,
     password: password,
     svg: svg,
   });

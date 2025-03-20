@@ -1,6 +1,10 @@
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import Link from 'next/link';
 
+export const runtime = 'edge';
+
 export default function DocumentationPage() {
+  const { env } = getRequestContext();
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <div className="mb-8">
@@ -46,7 +50,7 @@ export default function DocumentationPage() {
               <h3 className="font-mono text-lg mb-2">POST /api/chart</h3>
               <p className="mb-2">Create a new chart entry. Example request:</p>
               <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm overflow-x-auto">
-                {`curl -X POST ${process.env.NEXT_PUBLIC_BASE_URL}/api/chart \\
+                {`curl -X POST ${env.NEXT_PUBLIC_BASE_URL}/api/chart \\
   -H "Content-Type: application/json" \\
   -d '{
     "name": "Usage Stats",
@@ -66,12 +70,12 @@ export default function DocumentationPage() {
               <p className="mb-2">Delete a chart using either method:</p>
               <div className="space-y-2">
                 <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">
-                  {`curl -X DELETE ${process.env.NEXT_PUBLIC_BASE_URL}/api/chart/123 \\
+                  {`curl -X DELETE ${env.NEXT_PUBLIC_BASE_URL}/api/chart/123 \\
   -H "Authorization: Bearer $MASTER_KEY"`}
                 </pre>
                 <p className="text-center text-sm text-gray-600 dark:text-gray-400">or</p>
                 <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">
-                  {`curl -X DELETE ${process.env.NEXT_PUBLIC_BASE_URL}/api/chart/123 \\
+                  {`curl -X DELETE ${env.NEXT_PUBLIC_BASE_URL}/api/chart/123 \\
   -H "X-Delete-Password: chart-password"`}
                 </pre>
               </div>
