@@ -4,11 +4,9 @@ import ChartComponent from "@/components/Chart";
 import { EChartsOption } from "echarts";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<any>;
-}): Promise<Metadata> {
+export const runtime = "edge";
+
+export async function generateMetadata(): Promise<Metadata> {
   const { env } = getRequestContext();
   return {
     title: "Chart Crafter - Create & Share Temporary Charts",
