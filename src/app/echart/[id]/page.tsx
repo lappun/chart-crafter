@@ -16,10 +16,14 @@ export default async function ChartPage({ params }: { params: { id: string } }) 
   const config = await chartData.json() as ChartRequestData;
   
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{config.name}</h1>
-      <p className="mb-8 text-gray-600">{config.description}</p>
-      <ChartComponent options={config.data} />
+    <div className="container mx-auto p-4 flex flex-col min-h-screen">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold mb-2">{config.name}</h1>
+        <p className="text-gray-600">{config.description}</p>
+      </div>
+      <div className="flex-1 flex items-center justify-center">
+        <ChartComponent options={config.data} />
+      </div>
     </div>
   );
 }

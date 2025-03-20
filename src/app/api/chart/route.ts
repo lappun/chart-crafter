@@ -7,22 +7,61 @@ interface ChartRequest {
   name: string;
   description: string;
   data: ChartRequestData;
+  expiresIn: string;
+}
+
+interface StoredChartData extends ChartRequest {
+  expiryTime: number;
+  password: string;
+}
+
+function generateRandomPassword(length = 12): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const buffer = new Uint8Array(length);
+  crypto.getRandomValues(buffer);
+  return Array.from(buffer)
+    .map(byte => chars[byte % chars.length])
+    .join('');
 }
 
 export async function POST(request: Request) {
   const { env } = getRequestContext();
   const data: ChartRequest = await request.json();
   
-  if (!data.name || !data.description || !data.data) {
+  if (!data.name || !data.description || !data.data || !data.expiresIn) {
     return new Response('Missing required fields', { status: 400 });
   }
+
+  // Parse expiry duration
+  const expiryMatch = data.expiresIn.match(/^(\d+)([dh])$/);
+  if (!expiryMatch) {
+    return new Response('Invalid expiry format. Use e.g. "1h" or "30d"', { status: 400 });
+  }
+
+  const value = parseInt(expiryMatch[1]);
+  const unit = expiryMatch[2];
+  const expiryMs = unit === 'd' ? value * 86400000 : value * 3600000;
+  
+  if (expiryMs < 3600000 || expiryMs > 2592000000) { // 1h to 30d in ms
+    return new Response('Expiry must be between 1 hour and 30 days', { status: 400 });
+  }
+
+  // Generate password and expiry timestamp
+  const expiryTime = Date.now() + expiryMs;
+  const password = generateRandomPassword();
+
+  // Create stored data object
+  const storedData: StoredChartData = {
+    ...data,
+    expiryTime,
+    password
+  };
 
   const datePrefix = new Date().toISOString().split('T')[0].replace(/-/g, '');
   const id = `${datePrefix}-${crypto.randomUUID()}`;
   
-  await env.CHART_BUCKET.put(`${id}.json`, JSON.stringify(data));
-  
-  const image = await generateChartBase64String(data.data);
+  await env.CHART_BUCKET.put(`${id}.json`, JSON.stringify(storedData));
+  const image = await generateChartImage(data.data);
   await env.CHART_BUCKET.put(`${id}.png`, image);
 
   return NextResponse.json({
