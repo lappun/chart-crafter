@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getRequestContext } from '@cloudflare/next-on-pages';
-import { generateChartBase64String } from '@/app/api/chart/route';
 
 interface StoredChartData {
   name: string;
@@ -10,6 +9,7 @@ interface StoredChartData {
   expiryTime: number;
   password: string;
 }
+
 import { notFound } from 'next/navigation';
 import ChartComponent from '@/components/Chart';
 
@@ -20,13 +20,14 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const { id } = params;
 
   const chartData = await env.CHART_BUCKET.get(`${id}.json`);
-  if (!chartData) return {};
+  const pngData = await env.CHART_BUCKET.get(`${id}.png`);
+  if (!chartData || !pngData) return {};
 
   const config = await chartData.json() as StoredChartData;
+  const pngString = await pngData.text() as string;
   
   try {
-    const svgString = await generateChartBase64String(config.data);
-    const base64Image = btoa(svgString);
+    const base64Image = btoa(pngString);
 
     return {
       title: config.name,
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         title: config.name,
         description: config.description,
         images: [{
-          url: `data:image/svg+xml;base64,${base64Image}`,
+          url: `data:image/png;base64,${pngData}`,
           width: 1200,
           height: 630,
           alt: config.name,
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         card: 'summary_large_image',
         title: config.name,
         description: config.description,
-        images: [`data:image/svg+xml;base64,${base64Image}`],
+        images: [`data:image/png;base64,${base64Image}`],
       },
     };
   } catch (error) {
@@ -101,7 +102,7 @@ export default async function ChartPage({
           })}
         </p>
       </div>
-      <div className="flex-1 flex items-center justify-center">
+      <div id="chart-container" className="flex-1 flex items-center justify-center">
         <ChartComponent options={config.data} />
       </div>
     </div>

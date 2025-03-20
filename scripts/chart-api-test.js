@@ -32,8 +32,10 @@ async function testCreateChart() {
     throw new Error(`POST failed: ${response.status} ${await response.text()}`);
   }
 
-  const { url } = await response.json();
+  const { url, imageString, password } = await response.json();
   console.log('\x1b[32m%s\x1b[0m', '✓ Chart created successfully');
+  console.log('password', password);
+  console.log('imageString', imageString);
   return url.split('/').filter(Boolean).pop(); // Return the chart ID
 }
 
@@ -57,7 +59,7 @@ async function testChartPage(id) {
 async function testChartImage(id) {
   console.log('\x1b[36m%s\x1b[0m', `Testing GET /api/chart/image/${id}...`);
   
-  const response = await fetch(`${BASE_URL}/api/chart/image/${id}`);
+  const response = await fetch(`${BASE_URL}/echart/${id}`);
   
   if (!response.ok) {
     throw new Error(`Image fetch failed: ${response.status}`);
