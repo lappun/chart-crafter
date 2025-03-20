@@ -21,11 +21,15 @@ export async function GET() {
     };
 
     return NextResponse.json(status);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = `${error}`;
+    if (error instanceof Error) {
+      message = error.message;
+    }
     return NextResponse.json(
       {
         status: 'degraded', 
-        error: error.message,
+        error: message,
         storage: { r2: 'disconnected' }
       },
       { status: 500 }

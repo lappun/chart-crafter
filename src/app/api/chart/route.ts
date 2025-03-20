@@ -100,7 +100,9 @@ async function generateChartImage(
   const wasmArrayBuffer = await wasmResponse.arrayBuffer();
   try {
     await ResvgWasm.initWasm(wasmArrayBuffer);
-  } catch (error) {}
+  } catch (error) {
+    console.debug('ignroe this error', error);
+  }
 
   const echarts = await import("echarts");
   const chart = echarts.init(null, null, {
