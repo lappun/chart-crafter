@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const PORT = process.env.PORT || '3000';
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 async function listCharts() {
   console.log('\x1b[36m%s\x1b[0m', 'Fetching chart list...');
@@ -31,7 +32,7 @@ async function listCharts() {
     
     charts.forEach((chart, index) => {
       const created = new Date(chart.createdAt).toISOString();
-      const expires = new Date(chart.expiresAt).toISOString();
+      const expires = new Date(chart.expiresAt || chart.createdAt).toISOString();
       
       console.log(`\x1b[1mChart #${index + 1}\x1b[0m`);
       console.log(`ID: ${chart.id}`);

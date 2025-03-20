@@ -4,6 +4,7 @@
 interface CloudflareEnv {
   CHART_BUCKET: R2Bucket;
   MASTER_KEY?: string;
+  NEXT_PUBLIC_BASE_URL?: string;
 }
 
 type ChartRequestData = any;

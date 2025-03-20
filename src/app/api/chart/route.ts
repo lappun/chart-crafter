@@ -133,7 +133,7 @@ export async function GET(request: Request) {
       return {
         id: object.key.replace('.json', ''),
         name: chart.name,
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/echart/${object.key.replace('.json', '')}`,
+        url: `${env.NEXT_PUBLIC_BASE_URL}/echart/${object.key.replace('.json', '')}`,
         createdAt: object.uploaded,
         expiresAt: chart.expiryTime,
         status: Date.now() > chart.expiryTime ? 'expired' : 'active'
