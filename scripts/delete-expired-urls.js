@@ -36,6 +36,7 @@ async function deleteExpiredCharts() {
         return true; // Invalid expiry, delete
       }
       return now >= chart.expiresAt;
+      // return true;
     });
 
     if (expiredCharts.length === 0) {
