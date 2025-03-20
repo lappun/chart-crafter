@@ -1,7 +1,16 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`c3`](https://developers.cloudflare.com/pages/get-started/c3).
+# Chart Crafter
+
+[![Deploy to Cloudflare Pages](https://img.shields.io/badge/Deploy%20to-CF%20Pages-f38020?logo=cloudflare)](https://dash.cloudflare.com/?to=/:account/pages/new)
+
+A cloud-native chart sharing platform that creates secure, temporary URLs for data visualization sharing. Features include:
+
+- 📈 Create interactive charts with expiration dates
+- 🔗 Generate unique, shareable URLs
+- 🔒 Password-protected chart deletion
+- ⚡ Edge-rendered chart images for social sharing
+- 🧹 Automatic expiration cleanup
 
 ## Getting Started
-
 First, run the development server:
 
 ```bash
@@ -14,6 +23,49 @@ pnpm dev
 bun dev
 ```
 
+## Configuration
+
+Required environment variables:
+
+```bash
+NEXT_PUBLIC_BASE_URL="https://your-domain.com"  # Base URL for generated links
+MASTER_KEY="your-secure-key"                    # Admin/master key for privileged operations
+```
+
+## API Documentation
+
+### Create a Chart
+`POST /api/chart`
+```json
+{
+  "name": "Sales Report",
+  "description": "Q4 2023 Performance",
+  "data": {/* ECharts configuration */},
+  "expiresIn": "1d" // 1h, 30d, etc.
+}
+```
+
+Response:
+```json
+{
+  "id": "20240101-123e4567",
+  "url": "https://.../chart/20240101-123e4567/",
+  "password": "generated-password",
+  "svg": "<!-- Generated SVG -->"
+}
+```
+
+### Delete a Chart
+`DELETE /api/chart/[id]`
+- Authorization: `Bearer MASTER_KEY` or `X-Delete-Password: chart-password`
+
+### Admin Endpoints
+`GET /api/chart` - List all charts (requires master key)
+`GET /api/status` - Service health check
+
+## Deployment
+The application is optimized for Cloudflare Pages with:
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Cloudflare integration
@@ -25,43 +77,20 @@ Besides the `dev` script mentioned above `c3` has added a few extra scripts that
 
 > __Note:__ while the `dev` script is optimal for local development you should preview your Pages application as well (periodically or before deployments) in order to make sure that it can properly work in the Pages environment (for more details see the [`@cloudflare/next-on-pages` recommended workflow](https://github.com/cloudflare/next-on-pages/blob/main/internal-packages/next-dev/README.md#recommended-development-workflow))
 
-### Bindings
+## Security Considerations
 
-Cloudflare [Bindings](https://developers.cloudflare.com/pages/functions/bindings/) are what allows you to interact with resources available in the Cloudflare Platform.
+1. All operations require HTTPS
+2. Chart deletion requires either:
+   - The original generated password
+   - Master key for admin override
+3. Data is automatically purged after expiration
+4. Sensitive operations are logged
 
-You can use bindings during development, when previewing locally your application and of course in the deployed application:
+## Maintenance
 
-- To use bindings in dev mode you need to define them in the `next.config.js` file under `setupDevBindings`, this mode uses the `next-dev` `@cloudflare/next-on-pages` submodule. For more details see its [documentation](https://github.com/cloudflare/next-on-pages/blob/05b6256/internal-packages/next-dev/README.md).
+Run the cleanup script periodically to remove expired charts:
+```bash
+node scripts/delete-expired-urls.js
+```
 
-- To use bindings in the preview mode you need to add them to the `pages:preview` script accordingly to the `wrangler pages dev` command. For more details see its [documentation](https://developers.cloudflare.com/workers/wrangler/commands/#dev-1) or the [Pages Bindings documentation](https://developers.cloudflare.com/pages/functions/bindings/).
-
-- To use bindings in the deployed application you will need to configure them in the Cloudflare [dashboard](https://dash.cloudflare.com/). For more details see the  [Pages Bindings documentation](https://developers.cloudflare.com/pages/functions/bindings/).
-
-#### KV Example
-
-`c3` has added for you an example showing how you can use a KV binding.
-
-In order to enable the example:
-- Search for javascript/typescript lines containing the following comment:
-  ```ts
-  // KV Example:
-  ```
-  and uncomment the commented lines below it (also uncomment the relevant imports).
-- In the `wrangler.jsonc` file add the following configuration line:
-  ```
-  "kv_namespaces": [{ "binding": "MY_KV_NAMESPACE", "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }],
-  ```
-- If you're using TypeScript run the `cf-typegen` script to update the `env.d.ts` file:
-  ```bash
-  npm run cf-typegen
-  # or
-  yarn cf-typegen
-  # or
-  pnpm cf-typegen
-  # or
-  bun cf-typegen
-  ```
-
-After doing this you can run the `dev` or `preview` script and visit the `/api/hello` route to see the example in action.
-
-Finally, if you also want to see the example work in the deployed application make sure to add a `MY_KV_NAMESPACE` binding to your Pages application in its [dashboard kv bindings settings section](https://dash.cloudflare.com/?to=/:account/pages/view/:pages-project/settings/functions#kv_namespace_bindings_section). After having configured it make sure to re-deploy your application.
+> **Warning:** The master key grants full access to all charts. Rotate regularly and store securely.
