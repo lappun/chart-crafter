@@ -2,6 +2,7 @@
 
 const PORT = process.env.PORT || '3000';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const deleteAll = process.argv.includes('--all');
 
 async function deleteExpiredCharts() {
   console.log('\x1b[36m%s\x1b[0m', 'Starting expired chart cleanup...');
@@ -29,22 +30,25 @@ async function deleteExpiredCharts() {
       return;
     }
 
-    // Filter expired charts or those without expiry date
-    const now = Date.now();
-    const expiredCharts = charts.filter(chart => {
-      if (typeof chart.expiresAt !== 'number') {
-        return true; // Invalid expiry, delete
+    let expiredCharts;
+    if (deleteAll) {
+      expiredCharts = charts;
+    } else {
+      const now = Date.now();
+      expiredCharts = charts.filter(chart => {
+        if (typeof chart.expiresAt !== 'number') {
+          return true; // Invalid expiry, delete
+        }
+        return now >= chart.expiresAt;
+      });
+      
+      if (expiredCharts.length === 0) {
+        console.log('\x1b[32m%s\x1b[0m', 'No expired charts found');
+        return;
       }
-      return now >= chart.expiresAt;
-      // return true;
-    });
-
-    if (expiredCharts.length === 0) {
-      console.log('\x1b[32m%s\x1b[0m', 'No expired charts found');
-      return;
     }
 
-    console.log('\x1b[33m%s\x1b[0m', `Found ${expiredCharts.length} expired charts to delete\n`);
+    console.log(`\x1b[33m%s\x1b[0m`, `Found ${expiredCharts.length} ${deleteAll ? '' : 'expired '}charts to delete\n`);
     
     // Delete each expired chart
     let deletedCount = 0;
@@ -68,7 +72,7 @@ async function deleteExpiredCharts() {
       }
     }
 
-    console.log(`\n\x1b[32mCleanup complete.\x1b[0m Deleted ${deletedCount} of ${expiredCharts.length} expired charts`);
+    console.log(`\n\x1b[32mCleanup complete.\x1b[0m Deleted ${deletedCount} ${deleteAll ? 'charts' : 'expired charts'}`);
 
   } catch (error) {
     console.error('\x1b[41m\x1b[30m%s\x1b[0m', ' CLEANUP FAILED ');
