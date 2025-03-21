@@ -99,8 +99,9 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 async function loadFontAsUint8Array() {
+  const { env } = getRequestContext();
   const PORT = process.env.PORT || 3000;
-  const response = await fetch(`http://localhost:${PORT}/fonts/Roboto.ttf`);
+  const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/fonts/Roboto.ttf`);
   const arrayBuffer = await response.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);
   return uint8Array;
