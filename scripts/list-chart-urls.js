@@ -37,6 +37,7 @@ async function listCharts() {
       console.log(`\x1b[1mChart #${index + 1}\x1b[0m`);
       console.log(`ID: ${chart.id}`);
       console.log(`URL: \x1b[34m${chart.url}\x1b[0m`);
+      console.log(`URL: \x1b[34m${chart.thumbnail}\x1b[0m`);
       console.log(`Name: ${chart.name}`);
       console.log(`Created: ${created}`);
       console.log(`Expires: ${expires}`);

@@ -194,13 +194,12 @@ export async function GET(request: Request) {
         if (!data) return null;
 
         const chart = await data.json<StoredChartData>();
+        const id = object.key.replace(".json", "");
         return {
-          id: object.key.replace(".json", ""),
+          id: id,
           name: chart.name,
-          url: `${env.NEXT_PUBLIC_BASE_URL}/chart/${object.key.replace(
-            ".json",
-            ""
-          )}`,
+          url: `${env.NEXT_PUBLIC_BASE_URL}/chart/${id}`,
+          thumbnail: `${env.NEXT_PUBLIC_BASE_URL}/api/chart/image/${id}`,
           createdAt: object.uploaded,
           expiresAt: chart.expiryTime,
           status: Date.now() > chart.expiryTime ? "expired" : "active",
