@@ -12,6 +12,7 @@ type ChartRequestData = any;
 type ChartGenerationResult = {
   id?: string;
   url?: string;
+  thumbnail?: string;
   password?: string;
   svg?: string;
 };

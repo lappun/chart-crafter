@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 import { Resvg, initWasm, ResvgRenderOptions } from "@resvg/resvg-wasm";
+import { svg2png, initialize } from "svg2png-wasm";
 // @ts-ignore
-import _wasm from "../../wasm/index_bg.wasm?module";
+import resvg_wasm from "./wasm/index_bg.wasm?module";
+// @ts-ignore
+import svg2png_wasm from "./wasm/svg2png_wasm_bg.wasm?module";
+
+type Svg2PngType = 'SVG2PNG' | 'RESVG';
+
+const SVG2PNT: Svg2PngType = 'SVG2PNG'
 
 export const runtime = "edge";
 interface ChartRequest {
@@ -75,9 +82,10 @@ export async function POST(request: Request) {
   return NextResponse.json({
     id: id,
     url: `${env.NEXT_PUBLIC_BASE_URL}/chart/${id}/`,
+    thumbnail: `${env.NEXT_PUBLIC_BASE_URL}/api/chart/image/${id}/`,
     password: password,
     svg: svg,
-  });
+  } as ChartGenerationResult);
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -90,15 +98,55 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+async function loadFontAsUint8Array() {
+  const PORT = process.env.PORT || 3000;
+  const response = await fetch(`http://localhost:${PORT}/fonts/Roboto.ttf`);
+  const arrayBuffer = await response.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  return uint8Array;
+}
+
+async function convertImageByResvg(svg: string): Promise<ArrayBuffer> {
+  try {
+    await initWasm(resvg_wasm);
+  } catch (error) {
+    console.debug("ignroe this error", error);
+  }
+  const fontData = await loadFontAsUint8Array();
+  const opts: ResvgRenderOptions = {
+    font: {
+      fontBuffers: [fontData!], // require, If you use text in svg
+      sansSerifFamily:"Roboto",
+    }
+  };
+  const resvg = new Resvg(svg, opts as ResvgRenderOptions);
+  const pngData = resvg.render().asPng();
+  return pngData.buffer.slice(0) as ArrayBuffer;
+}
+
+async function convertImageBySvg2png(svg: string): Promise<ArrayBuffer> {
+  try {
+    await initialize(svg2png_wasm);
+  } catch (error) {
+    console.debug("ignroe this error", error);
+  }
+  const fontData = await loadFontAsUint8Array();
+  const pngData = await svg2png(svg, {
+    backgroundColor: 'white',
+    fonts: [
+      fontData!, // require, If you use text in svg
+    ],
+    defaultFontFamily: {
+      // optional
+      sansSerifFamily: "Roboto",
+    },
+  });
+  return pngData.buffer.slice(0) as ArrayBuffer;
+}
+
 async function generateChartImage(
   options: ChartRequestData
 ): Promise<{ svg: string; png: string }> {
-  try {
-    await initWasm(_wasm);
-  } catch (error) {
-    console.debug('ignroe this error', error);
-  }
-
   const echarts = await import("echarts");
   const chart = echarts.init(null, null, {
     renderer: "svg",
@@ -109,12 +157,12 @@ async function generateChartImage(
 
   chart.setOption(options);
   const svg = chart.renderToSVGString();
-
-  const opts: ResvgRenderOptions = {};
-  const resvg = new Resvg(svg, opts as ResvgRenderOptions);
-  const pngData = resvg.render().asPng();
-
-  const pngBuffer = pngData.buffer.slice(0) as ArrayBuffer;
+  let pngBuffer: ArrayBuffer;
+  if (SVG2PNT === 'RESVG') {
+    pngBuffer = await convertImageByResvg(svg);
+  } else {
+    pngBuffer = await convertImageBySvg2png(svg);
+  }
   const png = arrayBufferToBase64(pngBuffer);
   return { svg, png };
 }

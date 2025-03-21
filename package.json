@@ -18,7 +18,8 @@
 		"next": "15.1.7",
 		"node-fetch": "^2.6.9",
 		"react": "^19.0.0",
-		"react-dom": "^19.0.0"
+		"react-dom": "^19.0.0",
+		"svg2png-wasm": "^1.4.1"
 	},
 	"devDependencies": {
 		"@cloudflare/next-on-pages": "1",
